@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wazuh-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wazuh-dashboard
+  template:
+    metadata:
+      labels:
+        app: wazuh-dashboard
+    spec:
+      containers:
+        - name: dashboard
+          image: {{ .Values.dashboard.image }}
+          ports:
+            - containerPort: 443
+          resources:
+            requests:
+              cpu: {{ .Values.dashboard.resources.requests.cpu }}
+            limits:
+              cpu: {{ .Values.dashboard.resources.limits.cpu }}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: dashboard-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dashboard-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.dashboard.storage.size }}
+  storageClassName: {{ .Values.dashboard.storage.className }}
